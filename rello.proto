@@ -2,6 +2,20 @@ syntax = "proto3";
 
 package rello;
 
+import "google/api/annotations.proto";
+
+service Rello {
+  rpc CheckListWebhook(ChecklistUpdate) returns (Empty) {
+    option (google.api.http) = {
+      post: "/"
+      body: "*"
+    };
+  }
+
+}
+
+message Empty{}
+
 message ChecklistUpdate {
   Model model = 1;
   Action action = 2;

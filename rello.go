@@ -4,10 +4,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+
+	ambitiongrpc "github.com/adamryman/ambition-model/ambition-service/generated/client/grpc"
 )
+
+func init() {
+	dbLocation := os.Getenv("SQLITE3")
+	InitDatabase(dbLocation)
+
+	ambitionGRPCAddr := os.Getenv("AMBITIONGPRC")
+	conn, err := grpc.Dial(ambitionGRPCAddr, grpc.WithInsecure(), grpc.WithTimeout(time.Second))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error while dialing grpc connection: %v", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+	ambition := ambitiongrpc.New(conn)
+
+}
 
 const trelloTime = "2006-01-02T15:04:05.999Z07:00"
 
