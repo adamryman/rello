@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 const trelloTime = "2006-01-02T15:04:05.999Z07:00"
@@ -41,13 +43,14 @@ func handleUpdate(u ChecklistUpdate) {
 			fmt.Printf("time parsing failed: %v\n", err)
 			return
 		}
+		spew.Dump(c)
 	case "createCheckItem":
 		ci.UserId = u.Action.MemberCreator.Id
 		id, err := CreateCheckItem(*ci)
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("%s created with Id %d", ci.Name, id)
+		fmt.Printf("%s created with Id %d\n", ci.Name, id)
 	default:
 		fmt.Println(u.Action.Type)
 	}

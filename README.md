@@ -14,8 +14,8 @@ $ ./init.sh
 
 Export port you want this to run on and the path to sqlite3 database.
 ```
-export PORT=5040
-export SQLITE3=$GOPATH/src/github.com/adamryman/rello/db/db.db
+$ export PORT=5040
+$ export SQLITE3=$GOPATH/src/github.com/adamryman/rello/db/db.db
 
 ```
 
@@ -23,5 +23,18 @@ Install and Run.
 ```
 $ go install github.com/adamryman/rello/cmd/rello
 $ rello
+
+```
+
+### Development
+
+Install govendor
+```
+$ go get -u github.com/kardianos/govendor
+```
+
+Iterate with the command
+```
+$ govendor install github.com/adamryman/rello/cmd/rello && rello
 
 ```

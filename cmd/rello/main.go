@@ -17,5 +17,8 @@ func main() {
 	}
 
 	http.HandleFunc("/", rello.HandleWebhook)
-	_ = http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		panic(err)
+	}
 }
