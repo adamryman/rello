@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	port := os.Getenv("WEBLOGGERPORT")
+	port := os.Getenv("PORT")
 	dbLocation := os.Getenv("SQLITE3")
 
 	err := rello.InitDatabase(dbLocation)
