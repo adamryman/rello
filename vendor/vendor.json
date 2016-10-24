@@ -1,0 +1,25 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "SVXOQdpDBh0ihdZ5aIflgdA+Rpw=",
+			"path": "github.com/golang/protobuf/proto",
+			"revision": "98fa357170587e470c5f27d3c3ea0947b71eb455",
+			"revisionTime": "2016-10-12T20:53:35Z"
+		},
+		{
+			"checksumSHA1": "0YgW0+rmiIzLlvhIKlQ0s0olPg8=",
+			"path": "github.com/mattn/go-sqlite3",
+			"revision": "e5a3c16c5c1d80b24f633e68aecd6b0702786d3d",
+			"revisionTime": "2016-10-04T16:01:36Z"
+		},
+		{
+			"checksumSHA1": "Hky3u+8Rqum+wB5BHMj0A8ZmT4g=",
+			"path": "github.com/pkg/errors",
+			"revision": "a887431f7f6ef7687b556dbf718d9f351d4858a0",
+			"revisionTime": "2016-09-16T11:02:12Z"
+		}
+	],
+	"rootPath": "github.com/adamryman/rello"
+}
