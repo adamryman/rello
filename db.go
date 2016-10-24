@@ -20,15 +20,15 @@ func InitDatabase(conn string) error {
 	return nil
 }
 
-func CreateCheckItem(in CheckItem) (int64, error) {
-	const query = "INSERT INTO checkItems(name, trelloId, userId) values(?, ?, ?)"
+func createCheck(in Check) (int64, error) {
+	const query = "INSERT INTO checks(checkItemId, datetime) values(?, ?)"
 
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return -1, err
 	}
 
-	res, err := stmt.Exec(in.Name, in.Id, 1)
+	res, err := stmt.Exec(in.CheckItemId, in.Date)
 	if err != nil {
 		return -1, err
 	}
@@ -38,7 +38,25 @@ func CreateCheckItem(in CheckItem) (int64, error) {
 	return id, nil
 }
 
-func ReadCheckItemByTrelloId(tId string) (*CheckItem, error) {
+func createCheckItem(in CheckItem) (int64, error) {
+	const query = "INSERT INTO checkItems(name, trelloId, userId) values(?, ?, ?)"
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return -1, err
+	}
+
+	res, err := stmt.Exec(in.Name, in.Id, in.UserId)
+	if err != nil {
+		return -1, err
+	}
+
+	id, err := res.LastInsertId()
+
+	return id, nil
+}
+
+func readCheckItemByTrelloId(tId string) (*CheckItem, error) {
 	const query = "SELECT * FROM checkItems WHERE trelloId=?"
 
 	row := db.QueryRow(query, tId)
