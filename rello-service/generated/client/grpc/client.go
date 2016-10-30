@@ -1,19 +1,13 @@
-// Package grpc provides a gRPC client for the add service.
+// Package grpc provides a gRPC client for the Rello service.
 package grpc
 
 import (
-	//"time"
-
-	//jujuratelimit "github.com/juju/ratelimit"
-	//stdopentracing "github.com/opentracing/opentracing-go"
-	//"github.com/sony/gobreaker"
+	"github.com/pkg/errors"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
-	//"github.com/go-kit/kit/circuitbreaker"
 	"github.com/go-kit/kit/endpoint"
-	//"github.com/go-kit/kit/log"
-	//"github.com/go-kit/kit/ratelimit"
-	//"github.com/go-kit/kit/tracing/opentracing"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 
 	// This Service
@@ -22,17 +16,22 @@ import (
 	handler "github.com/adamryman/rello/rello-service/handlers/server"
 )
 
-// New returns an AddService backed by a gRPC client connection. It is the
+// New returns an service backed by a gRPC client connection. It is the
 // responsibility of the caller to dial, and later close, the connection.
-func New(conn *grpc.ClientConn /*, tracer stdopentracing.Tracer, logger log.Logger*/) handler.Service {
-	// We construct a single ratelimiter middleware, to limit the total outgoing
-	// QPS from this client to all methods on the remote instance. We also
-	// construct per-endpoint circuitbreaker middlewares to demonstrate how
-	// that's done, although they could easily be combined into a single breaker
-	// for the entire remote instance, too.
+func New(conn *grpc.ClientConn, options ...ClientOption) (handler.Service, error) {
+	var cc clientConfig
 
-	//limiter := ratelimit.NewTokenBucketLimiter(jujuratelimit.NewBucketWithRate(100, 100))
+	for _, f := range options {
+		err := f(&cc)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot apply option")
+		}
+	}
 
+	clientOptions := []grpctransport.ClientOption{
+		grpctransport.ClientBefore(
+			contextValuesToGRPCMetadata(cc.headers)),
+	}
 	var checklistwebhookEndpoint endpoint.Endpoint
 	{
 		checklistwebhookEndpoint = grpctransport.NewClient(
@@ -42,18 +41,42 @@ func New(conn *grpc.ClientConn /*, tracer stdopentracing.Tracer, logger log.Logg
 			svc.EncodeGRPCCheckListWebhookRequest,
 			svc.DecodeGRPCCheckListWebhookResponse,
 			pb.Empty{},
-			//grpctransport.ClientBefore(opentracing.FromGRPCRequest(tracer, "CheckListWebhook", logger)),
+			clientOptions...,
 		).Endpoint()
-		//checklistwebhookEndpoint = opentracing.TraceClient(tracer, "CheckListWebhook")(checklistwebhookEndpoint)
-		//checklistwebhookEndpoint = limiter(checklistwebhookEndpoint)
-		//checklistwebhookEndpoint = circuitbreaker.Gobreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{
-		//Name:    "CheckListWebhook",
-		//Timeout: 30 * time.Second,
-		//}))(checklistwebhookEndpoint)
 	}
 
 	return svc.Endpoints{
-
 		CheckListWebhookEndpoint: checklistwebhookEndpoint,
+	}, nil
+}
+
+type clientConfig struct {
+	headers []string
+}
+
+// ClientOption is a function that modifies the client config
+type ClientOption func(*clientConfig) error
+
+func CtxValuesToSend(keys ...string) ClientOption {
+	return func(o *clientConfig) error {
+		o.headers = keys
+		return nil
+	}
+}
+
+func contextValuesToGRPCMetadata(keys []string) grpctransport.RequestFunc {
+	return func(ctx context.Context, md *metadata.MD) context.Context {
+		var pairs []string
+		for _, k := range keys {
+			if v, ok := ctx.Value(k).(string); ok {
+				pairs = append(pairs, k, v)
+			}
+		}
+
+		if pairs != nil {
+			*md = metadata.Join(*md, metadata.Pairs(pairs...))
+		}
+
+		return ctx
 	}
 }

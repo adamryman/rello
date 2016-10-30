@@ -14,14 +14,11 @@ import (
 	"strconv"
 	"strings"
 
-	//stdopentracing "github.com/opentracing/opentracing-go"
 	"golang.org/x/net/context"
 
 	"github.com/go-kit/kit/log"
-	"github.com/pkg/errors"
-	//"github.com/go-kit/kit/endpoint"
-	//"github.com/go-kit/kit/tracing/opentracing"
 	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/pkg/errors"
 
 	// This service
 	pb "github.com/adamryman/rello/rello-service"
@@ -40,11 +37,10 @@ var (
 // MakeHTTPHandler returns a handler that makes a set of endpoints available
 // on predefined paths.
 func MakeHTTPHandler(ctx context.Context, endpoints Endpoints, logger log.Logger) http.Handler {
-	//func MakeHTTPHandler(ctx context.Context, endpoints Endpoints, /*tracer stdopentracing.Tracer,*/ logger log.Logger) http.Handler {
-	/*options := []httptransport.ServerOption{
-		httptransport.ServerErrorEncoder(errorEncoder),
-		httptransport.ServerErrorLogger(logger),
-	}*/
+	serverOptions := []httptransport.ServerOption{
+		httptransport.ServerBefore(headersToContext),
+	}
+
 	m := http.NewServeMux()
 
 	m.Handle("/", httptransport.NewServer(
@@ -52,6 +48,7 @@ func MakeHTTPHandler(ctx context.Context, endpoints Endpoints, logger log.Logger
 		endpoints.CheckListWebhookEndpoint,
 		HttpDecodeLogger(DecodeHTTPCheckListWebhookZeroRequest, logger),
 		EncodeHTTPGenericResponse,
+		serverOptions...,
 	))
 	return m
 }
@@ -70,20 +67,6 @@ func HttpDecodeLogger(next httptransport.DecodeRequestFunc, logger log.Logger) h
 func errorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 	code := http.StatusInternalServerError
 	msg := err.Error()
-
-	/*if e, ok := err.(httptransport.Error); ok {
-		msg = e.Err.Error()
-		switch e.Domain {
-		case httptransport.DomainDecode:
-			code = http.StatusBadRequest
-
-		case httptransport.DomainDo:
-			switch e.Err {
-			case ErrTwoZeroes, ErrMaxSizeExceeded, ErrIntOverflow:
-				code = http.StatusBadRequest
-			}
-		}
-	}*/
 
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errorWrapper{Error: msg})
@@ -196,6 +179,8 @@ func EncodeHTTPGenericResponse(_ context.Context, w http.ResponseWriter, respons
 	return json.NewEncoder(w).Encode(response)
 }
 
+// Helper functions
+
 // PathParams takes a url and a gRPC-annotation style url template, and
 // returns a map of the named parameters in the template and their values in
 // the given url.
@@ -260,4 +245,17 @@ func QueryParams(vals url.Values) (map[string]string, error) {
 		rv[k] = v[0]
 	}
 	return rv, nil
+}
+
+func headersToContext(ctx context.Context, r *http.Request) context.Context {
+	for k, _ := range r.Header {
+		// The key is added both in http format (k) which has had
+		// http.CanonicalHeaderKey called on it in transport as well as the
+		// strings.ToLower which is the grpc metadata format of the key so
+		// that it can be accessed in either format
+		ctx = context.WithValue(ctx, k, r.Header.Get(k))
+		ctx = context.WithValue(ctx, strings.ToLower(k), r.Header.Get(k))
+	}
+
+	return ctx
 }

@@ -24,7 +24,8 @@ func init() {
 		os.Exit(1)
 	}
 	defer conn.Close()
-	ambition := ambitiongrpc.New(conn)
+	ambition, err := ambitiongrpc.New(conn)
+	_ = ambition
 
 }
 
