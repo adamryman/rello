@@ -11,7 +11,6 @@ import (
 	"github.com/go-kit/kit/endpoint"
 
 	pb "github.com/adamryman/rello/rello-service"
-	handler "github.com/adamryman/rello/rello-service/handlers/server"
 )
 
 // Endpoints collects all of the endpoints that compose an add service. It's
@@ -44,7 +43,7 @@ func (e Endpoints) CheckListWebhook(ctx context.Context, in *pb.ChecklistUpdate)
 
 // Make Endpoints
 
-func MakeCheckListWebhookEndpoint(s handler.Service) endpoint.Endpoint {
+func MakeCheckListWebhookEndpoint(s pb.RelloServer) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*pb.ChecklistUpdate)
 		v, err := s.CheckListWebhook(ctx, req)

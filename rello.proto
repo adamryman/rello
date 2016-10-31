@@ -11,7 +11,6 @@ service Rello {
       body: "*"
     };
   }
-
 }
 
 message Empty{}
@@ -36,8 +35,6 @@ message CheckItem {
   string id = 3;
   string name = 4;
   int32 pos = 6;
-  int64 relloId = 7;
-  string userId = 8;
 }
 
 message Action {

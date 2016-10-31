@@ -13,12 +13,11 @@ import (
 	// This Service
 	pb "github.com/adamryman/rello/rello-service"
 	svc "github.com/adamryman/rello/rello-service/generated"
-	handler "github.com/adamryman/rello/rello-service/handlers/server"
 )
 
 // New returns an service backed by a gRPC client connection. It is the
 // responsibility of the caller to dial, and later close, the connection.
-func New(conn *grpc.ClientConn, options ...ClientOption) (handler.Service, error) {
+func New(conn *grpc.ClientConn, options ...ClientOption) (pb.RelloServer, error) {
 	var cc clientConfig
 
 	for _, f := range options {

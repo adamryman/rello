@@ -125,8 +125,6 @@ th:nth-child(4) {
 | id | TYPE_STRING | 3 |  |
 | name | TYPE_STRING | 4 |  |
 | pos | TYPE_INT32 | 6 |  |
-| relloId | TYPE_INT64 | 7 |  |
-| userId | TYPE_STRING | 8 |  |
 
 <a name="Action"></a>
 

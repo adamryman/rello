@@ -4,19 +4,16 @@ package handler
 // implementation. It also includes service middlewares.
 
 import (
-	_ "errors"
-	_ "time"
+	"fmt"
 
 	"golang.org/x/net/context"
 
-	_ "github.com/go-kit/kit/log"
-	_ "github.com/go-kit/kit/metrics"
-
+	"github.com/adamryman/rello"
 	pb "github.com/adamryman/rello/rello-service"
 )
 
 // NewService returns a naïve, stateless implementation of Service.
-func NewService() Service {
+func NewService() pb.RelloServer {
 	return relloService{}
 }
 
@@ -24,11 +21,14 @@ type relloService struct{}
 
 // CheckListWebhook implements Service.
 func (s relloService) CheckListWebhook(ctx context.Context, in *pb.ChecklistUpdate) (*pb.Empty, error) {
-	_ = ctx
-	_ = in
+	hash := ctx.Value("X-Trello-Webhook")
+	// TODO: verify this hash https://developers.trello.com/apis/webhooks
+	_ = hash
+	fmt.Println("X-Trello-Webhook: ", hash)
 
-	response := pb.Empty{}
-	return &response, nil
+	rello.HandleUpdate(in)
+
+	return &pb.Empty{}, nil
 }
 
 type Service interface {

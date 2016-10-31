@@ -19,7 +19,6 @@ import (
 	grpcclient "github.com/adamryman/rello/rello-service/generated/client/grpc"
 	httpclient "github.com/adamryman/rello/rello-service/generated/client/http"
 	clientHandler "github.com/adamryman/rello/rello-service/handlers/client"
-	handler "github.com/adamryman/rello/rello-service/handlers/server"
 )
 
 var (
@@ -49,7 +48,7 @@ func main() {
 	flag.Parse()
 
 	var (
-		service handler.Service
+		service pb.RelloServer
 		err     error
 	)
 	if *httpAddr != "" {
